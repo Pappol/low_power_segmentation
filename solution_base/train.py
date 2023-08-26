@@ -29,17 +29,23 @@ def augmentation(image, label, angle_range=15, target_size=(512, 512)):
         image = transforms.functional.vflip(image)
         label = transforms.functional.vflip(label)
     
-
+    #random crop
+    if random.random() > 0.8:
+        i, j, h, w = transforms.RandomCrop.get_params(image, output_size=(512, 512))
+        image = transforms.functional.crop(image, i, j, h, w)
+        label = transforms.functional.crop(label, i, j, h, w)
+    
     return image, label
 
 
 
 class lpcv_dataset(Dataset):
-    def __init__(self, image_folder, label_folder, transform=None):
+    def __init__(self, image_folder, label_folder, transform=None, augmentation=None):
         self.image_folder = image_folder
         self.label_folder = label_folder
         self.image_filenames = sorted(os.listdir(image_folder))  # Sort filenames
         self.transform = transform
+        self.augmentation = augmentation
 
     def __len__(self):
         return len(self.image_filenames)
@@ -52,10 +58,13 @@ class lpcv_dataset(Dataset):
         label_path = os.path.join(self.label_folder, image_filename)
 
         image = Image.open(image_path).convert("RGB")
-        label = np.asarray(Image.open(label_path))[:,:,0]
+        label = np.asarray(Image.open(label_path))
 
         if self.transform:
             image = self.transform(image)
+
+        if self.augmentation:
+            image, label = self.augmentation(image, label)
 
         return {"image": image, "label": label}
     
@@ -75,9 +84,6 @@ def test_model(img_path, save_path, model, preprocess):
 
     #save the image
     Image.fromarray((colored_image * 255).astype(np.uint8)).save("segmented_image.png")
-
-
-
 
 
 categories = ["background", "avalanche",
@@ -104,9 +110,18 @@ model = MobileNetV2ForSemanticSegmentation.from_pretrained("google/deeplabv3_mob
                                                            image_size=(512, 512))
 
 transforms = transforms.Compose([
-    transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                            std=[0.229, 0.224, 0.225]),
     transforms.ToTensor(),
+    transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                            std=[0.229, 0.224, 0.225])
 ])
 
+image_folder="/home/pappol/Scrivania/uni/cv/low_power_segmentation/dataset/LPCVC_Train_Updated/LPCVC_Train_Updated/LPCVC_Train_Updated/IMG/train/"
+label_folder="/home/pappol/Scrivania/uni/cv/low_power_segmentation/dataset/LPCVC_Train_Updated/LPCVC_Train_Updated/LPCVC_Train_Updated/GT_Updated/train/"
+
+train_dataset = lpcv_dataset(image_folder, label_folder, transform=transforms)
+
+
+print("Dataset size: ", len(train_dataset))
+print("Image shape: ", train_dataset[0]["image"].shape)
+print("Label shape: ", train_dataset[0]["label"].shape)
 
