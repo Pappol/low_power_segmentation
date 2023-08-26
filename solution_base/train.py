@@ -53,7 +53,7 @@ class lpcv_dataset(Dataset):
     def __getitem__(self, idx):
         image_filename = self.image_filenames[idx]
         image_path = os.path.join(self.image_folder, image_filename)
-        
+            
         # Generate corresponding label filename
         label_path = os.path.join(self.label_folder, image_filename)
 
@@ -66,7 +66,11 @@ class lpcv_dataset(Dataset):
         if self.augmentation:
             image, label = self.augmentation(image, label)
 
-        return {"image": image, "label": label}
+        # Preprocess the image using the image_processor
+        inputs = image_processor(images=image, return_tensors="pt")
+
+        return {"input_ids": inputs.input_ids, "attention_mask": inputs.attention_mask, "labels": torch.tensor(label)}
+
     
 
 def test_model(img_path, save_path, model, preprocess):
@@ -120,8 +124,11 @@ label_folder="/home/pappol/Scrivania/uni/cv/low_power_segmentation/dataset/LPCVC
 
 train_dataset = lpcv_dataset(image_folder, label_folder, transform=transforms)
 
+training_args = TrainingArguments(output_dir="test_trainer", num_train_epochs=1, per_device_train_batch_size=10, )
 
-print("Dataset size: ", len(train_dataset))
-print("Image shape: ", train_dataset[0]["image"].shape)
-print("Label shape: ", train_dataset[0]["label"].shape)
+trainer = Trainer(model=model,
+                    train_dataset=train_dataset,
+                    args=training_args,
+                    )   
 
+trainer.train()
