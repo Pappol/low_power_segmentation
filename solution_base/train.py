@@ -60,17 +60,20 @@ class lpcv_dataset(Dataset):
         image = Image.open(image_path).convert("RGB")
         label = np.asarray(Image.open(label_path))
 
-        if self.transform:
-            image = self.transform(image)
-
-        if self.augmentation:
-            image, label = self.augmentation(image, label)
+        # Scale image pixel values to [0, 1] range
+        image = np.array(image) / 255.0
 
         # Preprocess the image using the image_processor
         inputs = image_processor(images=image, return_tensors="pt")
 
-        return {"input_ids": inputs.input_ids, "attention_mask": inputs.attention_mask, "labels": torch.tensor(label)}
+        #remove the 3rd dimension from input
+        inputs["pixel_values"] = inputs["pixel_values"].squeeze(0)
+        print (inputs["pixel_values"].shape)
+        
+        return {"pixel_values": inputs["pixel_values"], "labels": torch.tensor(label, dtype=torch.long)}
 
+
+        
     
 
 def test_model(img_path, save_path, model, preprocess):
@@ -106,17 +109,20 @@ colors = ['black', 'white', 'pink', 'yellow', 'orange', 'brown',
 image_processor = AutoImageProcessor.from_pretrained("google/deeplabv3_mobilenet_v2_1.0_513", 
                                                      num_labels=len(categories), 
                                                      ignore_mismatched_sizes=True, 
-                                                     image_size=(512, 512))
+                                                     crop_size=(512, 512))
+#print (image_processor)
 
 model = MobileNetV2ForSemanticSegmentation.from_pretrained("google/deeplabv3_mobilenet_v2_1.0_513", 
                                                            num_labels=len(categories), 
                                                            ignore_mismatched_sizes=True, 
                                                            image_size=(512, 512))
 
+#print (model)
+
 transforms = transforms.Compose([
     transforms.ToTensor(),
-    transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                            std=[0.229, 0.224, 0.225])
+    transforms.Normalize(mean=[0.5, 0.5, 0.5],
+                            std=[0.5, 0.5, 0.5])
 ])
 
 image_folder="/home/pappol/Scrivania/uni/cv/low_power_segmentation/dataset/LPCVC_Train_Updated/LPCVC_Train_Updated/LPCVC_Train_Updated/IMG/train/"
@@ -124,7 +130,7 @@ label_folder="/home/pappol/Scrivania/uni/cv/low_power_segmentation/dataset/LPCVC
 
 train_dataset = lpcv_dataset(image_folder, label_folder, transform=transforms)
 
-training_args = TrainingArguments(output_dir="test_trainer", num_train_epochs=1, per_device_train_batch_size=10, )
+training_args = TrainingArguments(output_dir="test_trainer", num_train_epochs=1, per_device_train_batch_size=10)
 
 trainer = Trainer(model=model,
                     train_dataset=train_dataset,
