@@ -58,7 +58,7 @@ class lpcv_dataset(Dataset):
         label_path = os.path.join(self.label_folder, image_filename)
 
         image = Image.open(image_path).convert("RGB")
-        label = np.asarray(Image.open(label_path))
+        label = np.asarray(Image.open(label_path))[:,:,0]
 
         # Scale image pixel values to [0, 1] range
         image = np.array(image) / 255.0
@@ -68,7 +68,6 @@ class lpcv_dataset(Dataset):
 
         #remove the 3rd dimension from input
         inputs["pixel_values"] = inputs["pixel_values"].squeeze(0)
-        print (inputs["pixel_values"].shape)
         
         return {"pixel_values": inputs["pixel_values"], "labels": torch.tensor(label, dtype=torch.long)}
 
@@ -110,7 +109,7 @@ image_processor = AutoImageProcessor.from_pretrained("google/deeplabv3_mobilenet
                                                      num_labels=len(categories), 
                                                      ignore_mismatched_sizes=True, 
                                                      crop_size=(512, 512))
-#print (image_processor)
+print (image_processor)
 
 model = MobileNetV2ForSemanticSegmentation.from_pretrained("google/deeplabv3_mobilenet_v2_1.0_513", 
                                                            num_labels=len(categories), 
@@ -130,11 +129,11 @@ label_folder="/home/pappol/Scrivania/uni/cv/low_power_segmentation/dataset/LPCVC
 
 train_dataset = lpcv_dataset(image_folder, label_folder, transform=transforms)
 
-training_args = TrainingArguments(output_dir="test_trainer", num_train_epochs=1, per_device_train_batch_size=10)
+training_args = TrainingArguments(output_dir="test_trainer", num_train_epochs=10, per_device_train_batch_size=6)
 
 trainer = Trainer(model=model,
                     train_dataset=train_dataset,
                     args=training_args,
-                    )   
+                    )
 
 trainer.train()
