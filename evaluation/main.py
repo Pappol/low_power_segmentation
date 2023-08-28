@@ -1,5 +1,5 @@
 from argparse import ArgumentParser, Namespace
-from accuracy import *
+from low_power_segmentation.solution_base.accuracy import *
 from typing import List, Tuple
 
 import cv2
