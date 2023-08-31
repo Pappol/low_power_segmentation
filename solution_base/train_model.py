@@ -4,16 +4,18 @@ import torch
 from matplotlib.colors import ListedColormap
 import os
 from torch.utils.data import Dataset
-from torchvision import transforms
+from typing import Optional, Union
 import random
-import torchvision
-import torch.nn.functional as F
 from torchvision.transforms import functional as FF
 import numpy as np
 import torch.nn as nn
-from typing import Optional, Union, Tuple
 from transformers.modeling_outputs import SemanticSegmenterOutput
+import wandb
 
+wandb.init(project="low_power_segmentation")
+
+
+#class for accuracy tracker
 class AccuracyTracker(object):
     def __init__(self, n_classes):
         self.n_classes = n_classes
@@ -63,6 +65,7 @@ class AccuracyTracker(object):
             "Mean Dice : \t": self.mean_dice,
         }
 
+#dataset class for the training and testing
 class lpcv_dataset(Dataset):
     def __init__(self, image_folder, label_folder, transform=None, augmentation=None):
         self.image_folder = image_folder
@@ -99,6 +102,7 @@ class lpcv_dataset(Dataset):
 
         return {"pixel_values": inputs["pixel_values"], "labels": torch.tensor(label, dtype=torch.long)}
     
+#class for the model with the segmentation head to match desired output
 class Mobile_segment(MobileNetV2ForSemanticSegmentation):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
