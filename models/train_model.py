@@ -187,7 +187,7 @@ def augmentation(image, label, angle_range=15, target_size=(512, 512)):
     #random horizontal flip
     if random.random() > 0.8:
         image = FF.hflip(image)
-        #print lable type
+        #print lable type 
         label = FF.hflip(label)
 
     #random vertical flip
@@ -257,7 +257,7 @@ val_label_folder="/home/pappol/Scrivania/uni/cv/low_power_segmentation/dataset/L
 
 train_dataset = lpcv_dataset(image_folder, label_folder, augmentation=augmentation)
 
-training_args = TrainingArguments(output_dir="test_trainer", num_train_epochs=1000, per_device_train_batch_size=4)
+training_args = TrainingArguments(output_dir="test_trainer", num_train_epochs=10, per_device_train_batch_size=4)
 
 eval_dataset = lpcv_dataset(val_folder, val_label_folder)
 accuracy_tracker = AccuracyTracker(len(categories))
@@ -275,4 +275,4 @@ custom_trainer = CustomTrainer(
 custom_trainer.train()
 
 #save model
-model.save_pretrained("Mobile_segmentation")
+model.save_pretrained("Mobile_segmentationv2")

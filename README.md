@@ -181,7 +181,7 @@ zope.interface                4.3.2
 - Speed: Average runtime for processing one frame (s/f). As calculated in evaluation/evaluation.bash
 
 ## Solution Training
-We setted up a jupiter notebook with all useful information to run train the project solution. We used a NVIDIA 3070ti with 8GB of ram for the training. We provide weights for the model after 100 epocs in the following link drive link: https://drive.google.com/drive/folders/1pHnGqwRHUfoJcEboCOYGBap2eqz6deJb?usp=sharing
+We setted up a jupiter notebook with all useful information to run train the project solution. We used a NVIDIA 3070ti with 8GB of ram for the training. We provide weights for the model after 1000 epocs in the following link drive link: https://drive.google.com/drive/folders/1pHnGqwRHUfoJcEboCOYGBap2eqz6deJb?usp=sharing
 
 to recreate the environment of the training machine use dep.txt and run `pip install -r dep.txt` to install all dependencies preferrably in a virtual environment like conda.
 

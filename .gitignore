@@ -4,3 +4,4 @@ test_trainer
 *.log
 old
 wandb
+*.pt
