@@ -1,6 +1,6 @@
-# Sample Solution for LPCVC 2023
+# Proposed Solution for LPCVC 2023
 
-> Example solution for LPCVC 2023 for a Jetson Nano
+> solution for LPCVC 2023 for a Jetson Nano
 
 ## Table of Contents
 
@@ -10,8 +10,11 @@
   - [Dependencies](#dependencies)
   - [Evaluation](#evaluation)
     - [Format](#format)
-    - [Submission](#submission)
     - [Metrics](#metrics)
+- [Solution Training](#solution-training)
+  - [Data](#data)
+
+
 ## SetUp
 ### Requirements
  - Computer or VM (recommend VMWare) running Desktop Image of [Ubuntu 18.04 x64](https://releases.ubuntu.com/18.04/)
@@ -173,12 +176,33 @@ zope.interface                4.3.2
 - Model Output: `14 * 512 * 512` for `Channel * Height * Width`. Each channel
   corresponds to the predicted probability for one category.
 
-### Submission
-- Each team should submit only one file, `solution.pyz`: the zipped package of solution/. [`zipapp`](https://docs.python.org/3/library/zipapp.html) should be used to compress the package.
-
-Recommended command where solution is the name to your directory: `python3.6 -m zipapp  solution  -p='/usr/bin/env python3.6'`
-
 ### Metrics
 - Accuracy: Dice Coefficient over all 14 categroies. As calculated in evaluation/Accuracy.py
 - Speed: Average runtime for processing one frame (s/f). As calculated in evaluation/evaluation.bash
 
+## Solution Training
+We setted up a jupiter notebook with all useful information to run train the project solution. We used a NVIDIA 3070ti with 8GB of ram for the training. We provide weights for the model after 100 epocs in the following link drive link: https://drive.google.com/drive/folders/1pHnGqwRHUfoJcEboCOYGBap2eqz6deJb?usp=sharing
+
+to recreate the environment of the training machine use dep.txt and run `pip install -r dep.txt` to install all dependencies preferrably in a virtual environment like conda.
+
+### Data
+The data used for the training was provided by the challenge and are a very small number of images with annotations for the training and validation set. The data can be found in the following link: https://drive.google.com/file/d/1bIbZGYDQXkOaD96Jhn8g_w0dGPQ5y1fr/view?usp=drive_link 
+
+The on-device disaster scene parsing task is to segment and parse images of UAV-view disaster scenes into different regions associated with semantic categories related to disasters.
+
+We have collected a novel UAV-view disaster scene dataset consisting of 1,720 images collected from various disaster scenes. We will release 1,120 of the images as well as their ground-truth labels for training/validation, while reserving the rest for benchmarking submissions on our server. Images in the training test and the testing set are resized to 512X512 resolution, and densely annotated with these 14 categories:
+
+- background
+- debris/mud/rock flow
+- person
+- avalanche
+- fire/flare
+- pyroclastic_flow
+- building_undamaged
+- flood/water/river/sea
+- road/railway/bridge
+- building_damaged
+- ice_jam_flow
+- vehicle
+- cracks/fissure/subsidence
+- lava_flow
