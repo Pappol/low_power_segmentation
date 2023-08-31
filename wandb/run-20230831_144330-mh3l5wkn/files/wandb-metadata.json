@@ -1,0 +1,164 @@
+{
+    "os": "Linux-5.19.0-46-generic-x86_64-with-glibc2.36",
+    "python": "3.10.12",
+    "heartbeatAt": "2023-08-31T12:43:32.433966",
+    "startedAt": "2023-08-31T12:43:30.599350",
+    "docker": null,
+    "cuda": null,
+    "args": [],
+    "state": "running",
+    "program": "<python with no main file>",
+    "git": {
+        "remote": "https://github.com/Pappol/low_power_segmentation",
+        "commit": "e72d9a7cc812d7a47008ca369408b7a1f44bb8d2"
+    },
+    "email": "riccardo.parol@gmail.com\\n",
+    "root": "/home/pappol/Scrivania/uni/cv/low_power_segmentation",
+    "host": "ubpap",
+    "username": "pappol",
+    "executable": "/home/pappol/anaconda3/envs/cv/bin/python",
+    "cpu_count": 12,
+    "cpu_count_logical": 24,
+    "cpu_freq": {
+        "current": 2529.9000833333334,
+        "min": 2200.0,
+        "max": 3800.0
+    },
+    "cpu_freq_per_core": [
+        {
+            "current": 2200.0,
+            "min": 2200.0,
+            "max": 3800.0
+        },
+        {
+            "current": 2200.0,
+            "min": 2200.0,
+            "max": 3800.0
+        },
+        {
+            "current": 2200.0,
+            "min": 2200.0,
+            "max": 3800.0
+        },
+        {
+            "current": 4322.909,
+            "min": 2200.0,
+            "max": 3800.0
+        },
+        {
+            "current": 4321.756,
+            "min": 2200.0,
+            "max": 3800.0
+        },
+        {
+            "current": 2200.0,
+            "min": 2200.0,
+            "max": 3800.0
+        },
+        {
+            "current": 2200.0,
+            "min": 2200.0,
+            "max": 3800.0
+        },
+        {
+            "current": 2200.0,
+            "min": 2200.0,
+            "max": 3800.0
+        },
+        {
+            "current": 2186.891,
+            "min": 2200.0,
+            "max": 3800.0
+        },
+        {
+            "current": 2472.943,
+            "min": 2200.0,
+            "max": 3800.0
+        },
+        {
+            "current": 2178.836,
+            "min": 2200.0,
+            "max": 3800.0
+        },
+        {
+            "current": 2200.0,
+            "min": 2200.0,
+            "max": 3800.0
+        },
+        {
+            "current": 2200.0,
+            "min": 2200.0,
+            "max": 3800.0
+        },
+        {
+            "current": 2200.0,
+            "min": 2200.0,
+            "max": 3800.0
+        },
+        {
+            "current": 4337.586,
+            "min": 2200.0,
+            "max": 3800.0
+        },
+        {
+            "current": 2200.0,
+            "min": 2200.0,
+            "max": 3800.0
+        },
+        {
+            "current": 4329.348,
+            "min": 2200.0,
+            "max": 3800.0
+        },
+        {
+            "current": 2116.027,
+            "min": 2200.0,
+            "max": 3800.0
+        },
+        {
+            "current": 4143.417,
+            "min": 2200.0,
+            "max": 3800.0
+        },
+        {
+            "current": 2164.33,
+            "min": 2200.0,
+            "max": 3800.0
+        },
+        {
+            "current": 2200.0,
+            "min": 2200.0,
+            "max": 3800.0
+        },
+        {
+            "current": 2200.0,
+            "min": 2200.0,
+            "max": 3800.0
+        },
+        {
+            "current": 2200.0,
+            "min": 2200.0,
+            "max": 3800.0
+        },
+        {
+            "current": 3792.961,
+            "min": 2200.0,
+            "max": 3800.0
+        }
+    ],
+    "disk": {
+        "total": 915.8154449462891,
+        "used": 389.86325454711914
+    },
+    "gpu": "NVIDIA GeForce RTX 3070 Ti",
+    "gpu_count": 1,
+    "gpu_devices": [
+        {
+            "name": "NVIDIA GeForce RTX 3070 Ti",
+            "memory_total": 8589934592
+        }
+    ],
+    "memory": {
+        "total": 31.223506927490234
+    }
+}
