@@ -10,9 +10,8 @@ from torchvision.transforms import functional as FF
 import numpy as np
 import torch.nn as nn
 from transformers.modeling_outputs import SemanticSegmenterOutput
-import wandb
+from torch.nn import CrossEntropyLoss
 
-wandb.init(project="low_power_segmentation")
 
 
 #class for accuracy tracker
@@ -87,7 +86,7 @@ class lpcv_dataset(Dataset):
         image = Image.open(image_path).convert("RGB")
         label = np.asarray(Image.open(label_path))[:,:,0]
 
-        if augmentation:
+        if self.augmentation:
             image, label = self.augmentation(image, label)
 
         # Scale image pixel values to [0, 1] range
@@ -106,13 +105,10 @@ class lpcv_dataset(Dataset):
 class Mobile_segment(MobileNetV2ForSemanticSegmentation):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.segmentation_head = nn.Sequential(
-            nn.Conv2d(320, 14, kernel_size=1, stride=1),  # Adjust output channels to 14
-            nn.Upsample(size=(512, 512), mode='bilinear', align_corners=False)
-        )
+        self.segmentation_head = nn.Sequential(nn.Conv2d(320, 14, kernel_size=1, stride=1), nn.Upsample(size=(512, 512), mode='bilinear', align_corners=False))
 
 
-        def forward(
+    def forward(
             self,
             pixel_values: Optional[torch.Tensor] = None,
             labels: Optional[torch.Tensor] = None,
@@ -120,46 +116,44 @@ class Mobile_segment(MobileNetV2ForSemanticSegmentation):
             return_dict: Optional[bool] = None,
         ) -> Union[tuple, SemanticSegmenterOutput]:
 
-            output_hidden_states = (output_hidden_states if output_hidden_states is not None else self.config.output_hidden_states)
-            return_dict = return_dict if return_dict is not None else self.config.use_return_dict
+        output_hidden_states = (output_hidden_states if output_hidden_states is not None else self.config.output_hidden_states)
+        return_dict = return_dict if return_dict is not None else self.config.use_return_dict
 
-            outputs = self.mobilenet_v2(
-                pixel_values,
-                output_hidden_states=True,  # we need the intermediate hidden states
-                return_dict=return_dict,
-            )
+        outputs = self.mobilenet_v2(
+            pixel_values,
+            output_hidden_states=True,  # we need the intermediate hidden states
+            return_dict=return_dict,
+        )
 
-            encoder_hidden_states = outputs.hidden_states if return_dict else outputs[1]
+        encoder_hidden_states = outputs.hidden_states if return_dict else outputs[1]
 
-            logits = self.segmentation_head(encoder_hidden_states[-1])
-            print(logits.shape)
-            logits = self.segmentation_head(logits)
+        logits = self.segmentation_head(encoder_hidden_states[-1])
 
-            loss = None
-            if labels is not None:
-                if self.config.num_labels == 1:
-                    raise ValueError("The number of labels should be greater than one")
-                else:
-                    # upsample logits to the images' original size
-                    upsampled_logits = nn.functional.interpolate(
-                        logits, size=labels.shape[-2:], mode="bilinear", align_corners=False
-                    )
-                    loss_fct = super.CrossEntropyLoss(ignore_index=self.config.semantic_loss_ignore_index)
-                    loss = loss_fct(upsampled_logits, labels)
+        loss = None
+        if labels is not None:
+            if self.config.num_labels == 1:
+                raise ValueError("The number of labels should be greater than one")
+            else:
+                # upsample logits to the images' original size
+                upsampled_logits = nn.functional.interpolate(
+                    logits, size=labels.shape[-2:], mode="bilinear", align_corners=False
+                )
+                loss_fct = CrossEntropyLoss(ignore_index=self.config.semantic_loss_ignore_index)
+                loss = loss_fct(upsampled_logits, labels)
 
-            if not return_dict:
-                if output_hidden_states:
-                    output = (logits,) + outputs[1:]
-                else:
-                    output = (logits,) + outputs[2:]
-                return ((loss,) + output) if loss is not None else output
+        if not return_dict:
+            if output_hidden_states:
+                output = (logits,) + outputs[1:]
+            else:
+                output = (logits,) + outputs[2:]
+            return ((loss,) + output) if loss is not None else output
 
-            return SemanticSegmenterOutput(
-                loss=loss,
-                logits=logits,
-                hidden_states=outputs.hidden_states if output_hidden_states else None,
-                attentions=None,
-            )
+        return SemanticSegmenterOutput(
+            loss=loss,
+            logits=logits,
+            hidden_states=outputs.hidden_states if output_hidden_states else None,
+            attentions=None,
+        )
 
 
 class CustomTrainer(Trainer):
@@ -170,7 +164,7 @@ class CustomTrainer(Trainer):
     def on_epoch_end(self, args, state, control, logs=None, **kwargs):
         # Calculate and print accuracy metrics at the end of an epoch
         accuracy_scores = self.accuracy_tracker.get_scores()
-        wandb.log({"Accuracy": accuracy_scores[0]})
+        #wandb.log({"Accuracy": accuracy_scores[0]})
 
         super().on_epoch_end(args, state, control, logs=logs, **kwargs)
 
@@ -199,30 +193,6 @@ def augmentation(image, label, angle_range=15, target_size=(512, 512)):
     label = np.asarray(label)
 
     return image, label
-
-def test_model(img_path, save_path, model, preprocess):
-
-    image = Image.open(img_path)
-    inputs = image_processor(images=image, return_tensors="pt")
-
-    # Move inputs to the same device as the model's parameters
-    inputs = {key: value.to(model.device) for key, value in inputs.items()}
-
-    with torch.no_grad():
-        # Move the model to the same device as the inputs
-        model = model.to(inputs["pixel_values"].device)
-        outputs = model(**inputs)
-
-    logits = outputs.logits
-
-    # Post-process logits into segmentation mask
-    segmentation_mask = torch.argmax(logits, dim=1)
-
-    # Convert segmentation mask to colored image (assuming 14 color channels)
-    colored_image = ListedColormap(colors)(segmentation_mask[0].cpu().numpy())
-
-    #save the image
-    Image.fromarray((colored_image * 255).astype(np.uint8)).save("segmented_image.png")
 
 
 categories = ["background", "avalanche",

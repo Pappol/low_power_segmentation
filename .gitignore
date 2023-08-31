@@ -5,3 +5,5 @@ test_trainer
 old
 wandb
 *.pt
+models/Mobile_segmentation/
+models/Mobile_segmentationv2/
