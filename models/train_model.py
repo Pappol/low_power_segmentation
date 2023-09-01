@@ -11,7 +11,9 @@ import numpy as np
 import torch.nn as nn
 from transformers.modeling_outputs import SemanticSegmenterOutput
 from torch.nn import CrossEntropyLoss
+import wandb
 
+wandb.init(project="low_power_segmentation2")
 
 
 #class for accuracy tracker
@@ -164,7 +166,7 @@ class CustomTrainer(Trainer):
     def on_epoch_end(self, args, state, control, logs=None, **kwargs):
         # Calculate and print accuracy metrics at the end of an epoch
         accuracy_scores = self.accuracy_tracker.get_scores()
-        #wandb.log({"Accuracy": accuracy_scores[0]})
+        wandb.log({"Accuracy": accuracy_scores[0]})
 
         super().on_epoch_end(args, state, control, logs=logs, **kwargs)
 
@@ -172,6 +174,7 @@ class CustomTrainer(Trainer):
     def evaluation_step(self, model, inputs):
         loss, logits = super().evaluation_step(model, inputs)
         self.accuracy_tracker.update(inputs["labels"], logits.argmax(dim=1))
+        wandb.log({"Loss": loss})
         return loss, logits
 
 def augmentation(image, label, angle_range=15, target_size=(512, 512)):
@@ -179,7 +182,7 @@ def augmentation(image, label, angle_range=15, target_size=(512, 512)):
     label = Image.fromarray(label)
 
     #random horizontal flip
-    if random.random() > 0.8:
+    if random.random() > 0.5:
         image = FF.hflip(image)
         #print lable type 
         label = FF.hflip(label)
@@ -227,7 +230,7 @@ val_label_folder="/home/pappol/Scrivania/uni/cv/low_power_segmentation/dataset/L
 
 train_dataset = lpcv_dataset(image_folder, label_folder, augmentation=augmentation)
 
-training_args = TrainingArguments(output_dir="test_trainer", num_train_epochs=10, per_device_train_batch_size=4)
+training_args = TrainingArguments(output_dir="test_trainer", num_train_epochs=1000, per_device_train_batch_size=4)
 
 eval_dataset = lpcv_dataset(val_folder, val_label_folder)
 accuracy_tracker = AccuracyTracker(len(categories))
